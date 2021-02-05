@@ -1,0 +1,79 @@
+server:
+  port: 56040
+  max-http-header-size: 100KB
+
+nacos:
+  server:
+    addr: 39.96.45.86:8848
+
+spring:
+  application:
+    name: merchant-service
+  main:
+    allow-bean-definition-overriding: true # Spring Boot 2.1 需要设定
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${nacos.server.addr}
+        #namespace: a92f3c08-8e24-469c-a972-b6309d006c0d
+        namespace: 96d58827-9669-4afd-bfe8-6d5658b0ad43 # 命令行注入 服务器
+        cluster-name: DEFAULT
+      config:
+        server-addr: ${nacos.server.addr}
+        file-extension: yaml
+        #namespace: a92f3c08-8e24-469c-a972-b6309d006c0d # 命令行注入
+        namespace: 96d58827-9669-4afd-bfe8-6d5658b0ad43 # 命令行注入 服务器
+        group: SHANJUPAY_GROUP # 聚合支付业务组
+        ext-config:
+          # spring boot http配置
+          - refresh: true
+            data-id: spring-boot-http.yaml
+            group: COMMON_GROUP # 通用配置组
+
+          # spring boot starter druid配置
+          - refresh: true
+            data-id: spring-boot-starter-druid.yaml
+            group: COMMON_GROUP # 通用配置组
+
+          # spring boot mybatisplus配置
+          - refresh: true
+            data-id: spring-boot-mybatis-plus.yaml
+            group: COMMON_GROUP # 通用配置组
+
+
+  # SpringMVC上传文件配置
+  servlet:
+    multipart:
+      #默认支持文件上传
+      enabled: true
+      #支持文件写入磁盘
+      file-size-threshold: 0
+      # 上传文件的临时目录
+      location:
+      # 最大支持文件大小
+      max-file-size: 1MB
+      # 最大支持请求大小
+      max-request-size: 30MB
+
+
+# dubbo配置
+dubbo:
+  scan:
+    # dubbo 服务扫描基准包
+    base-packages: com.shanjupay
+  protocol:
+    name: dubbo
+    port: 20890
+  registry:
+    address: nacos://39.96.45.86:8848
+  application:
+    qos-port: 22240 # dubbo qos端口配置 命令行注入
+  consumer:
+    check: false
+    timeout: 90000
+    retries: -1
+
+
+logging:
+  config: classpath:log4j2.xml
+
