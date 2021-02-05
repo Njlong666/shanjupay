@@ -67,6 +67,10 @@ dubbo:
   cloud:
     subscribed-services: merchant-service
 
+#验证码服务地址
+CaptchaService:
+  url: http://127.0.0.1:56085/sailing/
+
 
 logging:
   config: classpath:log4j2.xml
