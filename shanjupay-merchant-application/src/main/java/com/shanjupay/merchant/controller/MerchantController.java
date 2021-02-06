@@ -1,15 +1,17 @@
 package com.shanjupay.merchant.controller;
 
+import com.shanjupay.common.domain.BusinessException;
+import com.shanjupay.common.domain.CommonErrorCode;
 import com.shanjupay.merchant.api.MerchantService;
 import com.shanjupay.merchant.api.dto.MerchantDTO;
+import com.shanjupay.merchant.common.util.SecurityUtil;
+import com.shanjupay.merchant.convert.MerchantConvert;
 import com.shanjupay.merchant.convert.MerchantConvertController;
 import com.shanjupay.merchant.service.FileService;
 import com.shanjupay.merchant.service.SmsService;
+import com.shanjupay.merchant.vo.MerchantDetailVO;
 import com.shanjupay.merchant.vo.MerchantRegisterVO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.*;
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.util.Map;
+import java.util.Objects;
 
 /*****
  *@Author NJL
@@ -105,6 +108,21 @@ public class MerchantController {
     }
 
 
-
+    /***
+     * 商户资质申请
+     * @param merchantInfo  merchantInfo
+     */
+    @ApiOperation("商户资质申请")
+    @ApiImplicitParams({ @ApiImplicitParam(name = "merchantInfo", value = "商户认证资料", required = true, dataType = "MerchantDetailVO", paramType = "body") })
+    @PostMapping("/my/merchants/save")
+    public void saveMerchant(@RequestBody MerchantDetailVO merchantInfo) {
+        //token中获取用户信息
+        Long merchantId = SecurityUtil.getMerchantId();
+        if (Objects.isNull(merchantId)){
+            throw new BusinessException(CommonErrorCode.E_200202);
+        }
+        MerchantDTO merchantDTO = MerchantConvert.INSTANCE.voToDto(merchantInfo);
+        merchantService.qualificationApplyFor(merchantId,merchantDTO);
+    }
 
 }

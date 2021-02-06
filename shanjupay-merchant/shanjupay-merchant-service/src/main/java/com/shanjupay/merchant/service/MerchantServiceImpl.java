@@ -12,6 +12,7 @@ import com.shanjupay.merchant.entity.Merchant;
 import com.shanjupay.merchant.mapper.MerchantMapper;
 import org.apache.dubbo.config.annotation.Service;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
 
@@ -62,6 +63,7 @@ public class MerchantServiceImpl implements MerchantService {
         return merchantDtoResp;
     }
 
+
     /***
      * 校验参数
      * @param merchantDTO merchantDTO
@@ -88,4 +90,56 @@ public class MerchantServiceImpl implements MerchantService {
         }
         return true;
     }
+
+
+
+    /***
+     * 商户资质申请
+     * @param merchantId 商户ID
+     * @param merchantDTO 商户信息
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void qualificationApplyFor(Long merchantId, MerchantDTO merchantDTO) throws BusinessException{
+        Merchant merchant = qualificationApplyForCheckParam(merchantId, merchantDTO);
+        if (Objects.nonNull(merchant)){
+            Merchant merchantRequest = MerchantConvert.INSTANCE.dtoToEntity(merchantDTO);
+            if (Objects.nonNull(merchant.getMobile())){
+                merchantRequest.setMobile(merchant.getMobile());
+            }
+            if (Objects.nonNull(merchant.getTenantId())){
+                merchantRequest.setTenantId(merchant.getTenantId());
+            }
+            if (Objects.nonNull(merchant.getUsername())){
+                merchantRequest.setUsername(merchant.getUsername());
+            }
+            merchantRequest.setId(merchant.getId());
+            //1-已申请待审核
+            merchantRequest.setAuditStatus("1");
+            merchantMapper.updateById(merchantRequest);
+        }
+    }
+
+    /***
+     * 商户资质申请校验参数
+     * @param merchantDTO 商户信息
+     * @return 参数无误返回true
+     * @throws BusinessException
+     */
+    private Merchant qualificationApplyForCheckParam(Long merchantId, MerchantDTO merchantDTO) throws BusinessException {
+
+        if (Objects.isNull(merchantDTO)) {
+            throw new BusinessException(CommonErrorCode.E_200201);
+        }
+        if (Objects.isNull(merchantId)) {
+            throw new BusinessException(CommonErrorCode.E_200227);
+        }
+
+        Merchant merchant = merchantMapper.selectById(merchantId);
+        if (Objects.isNull(merchant)){
+            throw new BusinessException(CommonErrorCode.E_200227);
+        }
+        return merchant;
+    }
+
 }

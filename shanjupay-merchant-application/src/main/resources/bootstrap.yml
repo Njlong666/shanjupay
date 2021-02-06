@@ -31,7 +31,7 @@ spring:
             data-id: spring-boot-http.yaml # spring boot http配置
             group: COMMON_GROUP # 通用配置组
           -
-            refresh: true
+            refresh: true # merchant-application.yaml 配置刷新
             data-id: merchant-application.yaml
             group: SHANJUPAY_GROUP
 

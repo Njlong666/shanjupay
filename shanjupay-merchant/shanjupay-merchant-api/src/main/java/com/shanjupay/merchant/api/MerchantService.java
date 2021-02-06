@@ -19,5 +19,14 @@ public interface MerchantService {
      * @param merchantDTO 保存的商户信息
      * @return 返回保存的商户信息
      */
-    public MerchantDTO saveMerchant(MerchantDTO merchantDTO) throws BusinessException;
+     MerchantDTO saveMerchant(MerchantDTO merchantDTO) throws BusinessException;
+
+
+    /***
+     * 商户资质申请
+     * @param merchantId 商户ID
+     * @param merchantDTO 商户信息
+     */
+    void qualificationApplyFor(Long merchantId ,MerchantDTO merchantDTO) throws BusinessException;
+
 }

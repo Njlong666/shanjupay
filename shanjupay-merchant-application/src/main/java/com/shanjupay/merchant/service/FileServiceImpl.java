@@ -19,6 +19,7 @@ import java.util.UUID;
 
 @Service
 @Slf4j
+//配置刷新
 @RefreshScope
 public class FileServiceImpl implements FileService{
 
