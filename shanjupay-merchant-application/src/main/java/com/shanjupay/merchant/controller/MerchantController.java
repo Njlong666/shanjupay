@@ -3,13 +3,16 @@ package com.shanjupay.merchant.controller;
 import com.shanjupay.merchant.api.MerchantService;
 import com.shanjupay.merchant.api.dto.MerchantDTO;
 import com.shanjupay.merchant.convert.MerchantConvertController;
+import com.shanjupay.merchant.service.FileService;
 import com.shanjupay.merchant.service.SmsService;
 import com.shanjupay.merchant.vo.MerchantRegisterVO;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import javax.annotation.Resource;
@@ -29,6 +32,10 @@ public class MerchantController {
 
     @Resource
     private SmsService smsService;
+
+    @Resource
+    private FileService fileService;
+
 
     @ApiOperation("根据id查询商户")
     @GetMapping("/merchants/{id}")
@@ -58,7 +65,7 @@ public class MerchantController {
      */
     @ApiOperation("获取验证码")
     @ApiImplicitParam(name = "phone", value = "手机号", required = true, dataType = "string")
-    @PostMapping(value = "/merchant/generate")
+    @PostMapping(value = "/generate")
     public Map<String, Object> generate(@RequestParam("phone") String phone) {
         return smsService.generate(phone);
     }
@@ -72,7 +79,7 @@ public class MerchantController {
      */
     @ApiOperation("商户注册")
     @ApiImplicitParam(name = "merchantRegisterVO", value = "商户注册信息", required = true, dataType = "body")
-    @PostMapping(value = "/merchant/registration")
+    @PostMapping(value = "/registration")
     public MerchantRegisterVO registration(@RequestBody  MerchantRegisterVO  merchantRegisterVO) {
 
 
@@ -84,6 +91,20 @@ public class MerchantController {
 
         return MerchantConvertController.INSTANCE.dtoToVo(merchantDTO);
     }
+
+
+    /****
+     * 证件照上传
+     * @param file 证件照
+     * @return 绝对路径
+     */
+    @ApiOperation("证件照上传")
+    @PostMapping(value = "/upload")
+    public String upload( @ApiParam(value = "证件照",required = true) @RequestParam("file") MultipartFile file){
+        return fileService.upload(file);
+    }
+
+
 
 
 }

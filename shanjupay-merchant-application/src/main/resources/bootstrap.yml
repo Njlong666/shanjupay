@@ -30,6 +30,10 @@ spring:
             refresh: true
             data-id: spring-boot-http.yaml # spring boot http配置
             group: COMMON_GROUP # 通用配置组
+          -
+            refresh: true
+            data-id: merchant-application.yaml
+            group: SHANJUPAY_GROUP
 
   # SpringMVC上传文件配置
   servlet:
@@ -66,11 +70,6 @@ dubbo:
     retries: -1
   cloud:
     subscribed-services: merchant-service
-
-#验证码服务地址
-CaptchaService:
-  url: http://127.0.0.1:56085/sailing/
-
 
 logging:
   config: classpath:log4j2.xml

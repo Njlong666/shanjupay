@@ -3,15 +3,15 @@ package com.shanjupay.merchant.service;
 import com.shanjupay.common.domain.BusinessException;
 import com.shanjupay.common.domain.CommonErrorCode;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.dubbo.config.annotation.Service;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.*;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /*****
  *@Author NJL
@@ -19,6 +19,7 @@ import java.util.Objects;
  */
 @Service
 @Slf4j
+@RefreshScope
 public class SmsServiceImpl implements SmsService {
 
     @Resource
