@@ -10,11 +10,10 @@ import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.apache.dubbo.config.annotation.Reference;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+
 
 import javax.annotation.Resource;
 import java.util.Map;
-import java.util.Objects;
 
 /*****
  *@Author NJL

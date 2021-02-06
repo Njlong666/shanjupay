@@ -9,7 +9,7 @@ package com.shanjupay.common.domain;
  * 后两位:异常标识
  */
 public enum CommonErrorCode implements ErrorCode {
-	
+
 	////////////////////////////////////公用异常编码 //////////////////////////
 
 	E_200201(200101,"传入对象为空"),
@@ -80,7 +80,7 @@ public enum CommonErrorCode implements ErrorCode {
 
 	////////////////////////////////////UAA服务异常编码12 //////////////////////////
 
-    
+
 	////////////////////////////////////统一账号服务异常编码 13//////////////////////////
 
 
@@ -104,15 +104,17 @@ public enum CommonErrorCode implements ErrorCode {
 	 * 未知错误
 	 */
 	UNKOWN(999999,"未知错误");
-	
+
 
 	private int code;
 	private String desc;
-		
+
+	@Override
 	public int getCode() {
 		return code;
 	}
 
+	@Override
 	public String getDesc() {
 		return desc;
 	}

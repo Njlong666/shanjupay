@@ -1,5 +1,7 @@
 package com.shanjupay.merchant.service;
 
+import com.shanjupay.common.domain.BusinessException;
+import com.shanjupay.common.domain.CommonErrorCode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.dubbo.config.annotation.Service;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +36,7 @@ public class SmsServiceImpl implements SmsService {
      * @return key
      */
     @Override
-    public Map<String,Object> generate(String phone) {
+    public Map<String,Object> generate(String phone) throws BusinessException {
         String url =  captchaServiceUrl + "generate?effectiveTime=600&name=sms";
         HttpHeaders tempHeaders = new HttpHeaders();
         tempHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -62,7 +64,7 @@ public class SmsServiceImpl implements SmsService {
      * @param verificationKey 验证码key
      */
     @Override
-    public void verify(String verificationCode, String verificationKey) {
+    public void verify(String verificationCode, String verificationKey) throws BusinessException{
         String url = captchaServiceUrl + "verify?name=sms&verificationCode="+ verificationCode +"&verificationKey=" + verificationKey;
         log.info("请求验证码接口参数 URL：{}",url);
         Map responseMap  = null;
@@ -70,11 +72,11 @@ public class SmsServiceImpl implements SmsService {
             ResponseEntity<Map> exchange = restTemplate.exchange(url, HttpMethod.POST, HttpEntity.EMPTY, Map.class);
             responseMap  = exchange.getBody();
         }catch (Exception e){
-            throw new RuntimeException("调用验证码服务错误");
+            throw new BusinessException(CommonErrorCode.E_100102);
         }
         log.info("掉用验证码接口返回参数：{}",responseMap);
         if (responseMap == null || responseMap.get("result") == null || !(Boolean) responseMap.get("result")){
-            throw new RuntimeException("验码错误");
+            throw new BusinessException(CommonErrorCode.E_100102);
         }
 
     }

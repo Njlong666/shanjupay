@@ -1,5 +1,7 @@
 package com.shanjupay.merchant.service;
 
+import com.shanjupay.common.domain.BusinessException;
+
 import java.util.Map;
 
 /*****
@@ -13,7 +15,7 @@ public interface SmsService {
      * @param phone 手机号
      * @return key
      */
-    Map<String, Object> generate(String phone);
+    Map<String, Object> generate(String phone) throws BusinessException;
 
 
     /***
@@ -21,7 +23,7 @@ public interface SmsService {
      * @param verificationCode 验证码
      * @param verificationKey 验证码key
      */
-    void verify(String verificationCode,String verificationKey);
+    void verify(String verificationCode,String verificationKey) throws BusinessException;
 
 
 }
