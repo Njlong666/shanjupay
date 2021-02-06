@@ -26,7 +26,7 @@ public class GlobalExceptionHandler  {
     private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
 
-    @ExceptionHandler(value = BusinessException.class)
+    @ExceptionHandler(value = Exception.class)
     @ResponseBody
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public RestErrorResponse processException(HttpServletRequest request,

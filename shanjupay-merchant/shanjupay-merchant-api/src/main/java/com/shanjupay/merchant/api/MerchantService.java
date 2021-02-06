@@ -1,5 +1,6 @@
 package com.shanjupay.merchant.api;
 
+import com.shanjupay.common.domain.BusinessException;
 import com.shanjupay.merchant.api.dto.MerchantDTO;
 
 /*****
@@ -18,5 +19,5 @@ public interface MerchantService {
      * @param merchantDTO 保存的商户信息
      * @return 返回保存的商户信息
      */
-    public MerchantDTO saveMerchant(MerchantDTO merchantDTO);
+    public MerchantDTO saveMerchant(MerchantDTO merchantDTO) throws BusinessException;
 }
