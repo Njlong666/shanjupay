@@ -119,10 +119,29 @@ public class MerchantController {
         //token中获取用户信息
         Long merchantId = SecurityUtil.getMerchantId();
         if (Objects.isNull(merchantId)){
-            throw new BusinessException(CommonErrorCode.E_200202);
+            throw new BusinessException(CommonErrorCode.E_200018);
         }
         MerchantDTO merchantDTO = MerchantConvert.INSTANCE.voToDto(merchantInfo);
         merchantService.qualificationApplyFor(merchantId,merchantDTO);
+    }
+
+
+
+    /***
+     * 商户资质审核
+     * @param auditStatus  审核状态 2-审核通过,3-审核拒绝
+     */
+    @ApiOperation("商户资质审核")
+    @ApiImplicitParams({ @ApiImplicitParam(name = "auditStatus", value = "商户资质审核", required = true, dataType = "String") })
+    @PostMapping("/my/merchants/updateMerchantAuditStatus")
+    public MerchantDTO updateMerchantAuditStatus( @ApiParam(name = "auditStatus",value = "审核状态 2-审核通过,3-审核拒绝",required = true)
+                                                      @RequestParam("auditStatus") String auditStatus){
+        //token中获取用户信息
+        Long merchantId = SecurityUtil.getMerchantId();
+        if (Objects.isNull(merchantId)){
+            throw new BusinessException(CommonErrorCode.E_200018);
+        }
+        return merchantService.updateMerchantAuditStatus(merchantId, auditStatus);
     }
 
 }

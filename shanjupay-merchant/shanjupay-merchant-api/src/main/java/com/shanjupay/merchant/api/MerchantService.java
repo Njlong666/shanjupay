@@ -15,9 +15,10 @@ public interface MerchantService {
 
 
     /***
-     * 保存商户信息
+     *  保存商户信息
      * @param merchantDTO 保存的商户信息
      * @return 返回保存的商户信息
+     * @throws BusinessException
      */
      MerchantDTO saveMerchant(MerchantDTO merchantDTO) throws BusinessException;
 
@@ -26,7 +27,17 @@ public interface MerchantService {
      * 商户资质申请
      * @param merchantId 商户ID
      * @param merchantDTO 商户信息
+     * @throws BusinessException
      */
     void qualificationApplyFor(Long merchantId ,MerchantDTO merchantDTO) throws BusinessException;
 
+
+    /***
+     *  商户资质审核
+     * @param merchantId 商户ID
+     * @param auditStatus 商户资质审核状态 0-未申请,1-已申请待审核,2-审核通过,3-审核拒绝
+     * @return MerchantDTO
+     * @throws BusinessException
+     */
+    MerchantDTO updateMerchantAuditStatus(Long merchantId,String auditStatus)throws BusinessException;
 }

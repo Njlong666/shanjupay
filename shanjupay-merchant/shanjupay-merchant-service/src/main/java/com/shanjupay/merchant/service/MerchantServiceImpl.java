@@ -72,21 +72,21 @@ public class MerchantServiceImpl implements MerchantService {
     private Boolean saveMerchantCheckParam(MerchantDTO merchantDTO) throws BusinessException {
 
         if (Objects.isNull(merchantDTO)) {
-            throw new BusinessException(CommonErrorCode.E_200201);
+            throw new BusinessException(CommonErrorCode.E_110006);
         }
 
         if (StringUtil.isBlank(merchantDTO.getMobile())) {
-            throw new BusinessException(CommonErrorCode.E_200230);
+            throw new BusinessException(CommonErrorCode.E_100112);
         }
 
         if (!PhoneUtil.isMatches(merchantDTO.getMobile())) {
-            throw new BusinessException(CommonErrorCode.E_200224);
+            throw new BusinessException(CommonErrorCode.E_100109);
         }
 
         //查询手机号是否已经存在
         Integer count = merchantMapper.selectCount(new LambdaQueryWrapper<Merchant>().eq(Merchant::getMobile, merchantDTO.getMobile()));
         if (count > 0) {
-            throw new BusinessException(CommonErrorCode.E_200203);
+            throw new BusinessException(CommonErrorCode.E_100113);
         }
         return true;
     }
@@ -129,17 +129,43 @@ public class MerchantServiceImpl implements MerchantService {
     private Merchant qualificationApplyForCheckParam(Long merchantId, MerchantDTO merchantDTO) throws BusinessException {
 
         if (Objects.isNull(merchantDTO)) {
-            throw new BusinessException(CommonErrorCode.E_200201);
+            throw new BusinessException(CommonErrorCode.E_110006);
         }
         if (Objects.isNull(merchantId)) {
-            throw new BusinessException(CommonErrorCode.E_200227);
+            throw new BusinessException(CommonErrorCode.E_110006);
         }
 
         Merchant merchant = merchantMapper.selectById(merchantId);
         if (Objects.isNull(merchant)){
-            throw new BusinessException(CommonErrorCode.E_200227);
+            throw new BusinessException(CommonErrorCode.E_200002);
         }
         return merchant;
+    }
+
+
+
+
+    /***
+     *  商户资质审核
+     * @param merchantId 商户ID
+     * @param auditStatus 商户资质审核状态 0-未申请,1-已申请待审核,2-审核通过,3-审核拒绝
+     * @return MerchantDTO
+     * @throws BusinessException
+     */
+    @Override
+    public MerchantDTO updateMerchantAuditStatus(Long merchantId, String auditStatus) throws BusinessException {
+
+        if (Objects.isNull(merchantId) || StringUtil.isBlank(auditStatus)){
+            throw new BusinessException(CommonErrorCode.E_110006);
+        }
+
+        Merchant merchant = new Merchant();
+        merchant.setId(merchantId);
+        merchant.setAuditStatus(auditStatus);
+
+        merchantMapper.updateById(merchant);
+
+        return MerchantConvert.INSTANCE.entityToDto(merchant);
     }
 
 }
