@@ -1,14 +1,22 @@
 package com.shanjupay.transaction.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.shanjupay.common.domain.BusinessException;
+import com.shanjupay.common.domain.CommonErrorCode;
+import com.shanjupay.common.util.StringUtil;
 import com.shanjupay.transaction.api.PayChannelService;
 import com.shanjupay.transaction.api.dto.PlatformChannelDTO;
 import com.shanjupay.transaction.convert.PlatformChannelConvert;
+import com.shanjupay.transaction.entity.AppPlatformChannel;
 import com.shanjupay.transaction.entity.PlatformChannel;
+import com.shanjupay.transaction.mapper.AppPlatformChannelMapper;
 import com.shanjupay.transaction.mapper.PlatformChannelMapper;
 import org.apache.dubbo.config.annotation.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /*****
  *@Author NJL
@@ -22,6 +30,8 @@ public class PayChannelServiceImpl implements PayChannelService {
     @Resource
     private PlatformChannelMapper platformChannelMapper;
 
+    @Resource
+    private AppPlatformChannelMapper appPlatformChannelMapper;
 
     /***
      * 查询所有支付渠道
@@ -31,5 +41,42 @@ public class PayChannelServiceImpl implements PayChannelService {
     public List<PlatformChannelDTO> queryAllPayChannel() {
         List<PlatformChannel> platformChannels = platformChannelMapper.selectList(null);
         return PlatformChannelConvert.INSTANCE.listentity2listdto(platformChannels);
+    }
+
+    /***
+     * 绑定定平台服务类型
+     * @param appId 应用ID
+     * @param platformChannelCodes 平台服务类型列表Code
+     * @throws BusinessException
+     */
+    @Override
+    @Transactional
+    public void bindPlatformChannelForApp(String appId, String platformChannelCodes) throws BusinessException {
+        checkParam(appId,platformChannelCodes);
+
+        AppPlatformChannel entity = appPlatformChannelMapper.selectOne(new LambdaQueryWrapper<AppPlatformChannel>().eq(AppPlatformChannel::getAppId, appId)
+                .eq(AppPlatformChannel::getPlatformChannel, platformChannelCodes));
+        if (Objects.isNull(entity)){
+
+            AppPlatformChannel appPlatformChannel = new AppPlatformChannel();
+            appPlatformChannel.setAppId(appId);
+            appPlatformChannel.setPlatformChannel(platformChannelCodes);
+            appPlatformChannelMapper.insert(appPlatformChannel);
+        }
+
+    }
+
+
+
+    /***
+     *  bindPlatformChannelForApp方法参数校验
+     * @param appId 应用ID
+     * @param platformChannelCodes 平台服务类型列表Code
+     * @return
+     */
+    private void checkParam(String appId, String platformChannelCodes) throws BusinessException{
+        if (StringUtil.isBlank(appId) || StringUtil.isBlank(platformChannelCodes)){
+            throw new BusinessException(CommonErrorCode.E_110006);
+        }
     }
 }
