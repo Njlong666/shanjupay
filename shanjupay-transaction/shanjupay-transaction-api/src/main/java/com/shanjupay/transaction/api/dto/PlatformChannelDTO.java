@@ -8,6 +8,7 @@ import java.io.Serializable;
 
 /**
  * 平台提供支付渠道
+ * @author NJL
  */
 @ApiModel(value = "PlatformChannelDTO", description = "平台支付渠道")
 @Data
