@@ -63,6 +63,11 @@ public class AppController {
     }
 
 
+    /***
+     * 绑定服务类型
+     * @param appId 应用id
+     * @param platformChannelCodes 服务类型code
+     */
     @ApiOperation("绑定服务类型")
     @PostMapping(value = "/my/apps/{appId}/platform‐channels")
     @ApiImplicitParams({
@@ -70,5 +75,20 @@ public class AppController {
             @ApiImplicitParam(value = "服务类型code", name = "platformChannelCodes", dataType = "string", paramType = "query")})
     public void bindPlatformForApp(@PathVariable("appId") String appId, @RequestParam("platformChannelCodes") String platformChannelCodes) {
         payChannelService.bindPlatformChannelForApp(appId, platformChannelCodes);
+    }
+
+    /***
+     * 查询应用是否绑定服务类型
+     * @param appId 应用appId
+     * @param platformChannel 服务类型
+     * @return  已绑定返回1，否则 返回0
+     */
+    @ApiOperation("查询应用是否绑定服务类型")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "appId", value = "应用appId", required = true, dataType = "String", paramType = "query"),
+            @ApiImplicitParam(name = "platformChannel", value = "服务类型", required = true, dataType = "String", paramType = "query")})
+    @GetMapping("/my/merchants/apps/platformchannels")
+    public int queryAppBindPlatformChannel(@RequestParam String appId, @RequestParam String platformChannel) {
+        return payChannelService.queryAppBindPlatformChannel(appId, platformChannel);
     }
 }

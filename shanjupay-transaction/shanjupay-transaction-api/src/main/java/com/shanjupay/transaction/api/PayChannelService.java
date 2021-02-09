@@ -26,4 +26,15 @@ public interface PayChannelService {
      * @throws BusinessException
      */
     void bindPlatformChannelForApp(String appId, String platformChannelCodes) throws BusinessException;
+
+
+    /***\
+     *
+     * 用是否已经绑定服务类型
+     * @param appId  应用ID
+     * @param platformChannel 平台服务类型Code
+     * @return   已绑定返回1，否则 返回0
+     * @throws BusinessException
+     */
+    int queryAppBindPlatformChannel(String appId,String platformChannel) throws BusinessException;
 }

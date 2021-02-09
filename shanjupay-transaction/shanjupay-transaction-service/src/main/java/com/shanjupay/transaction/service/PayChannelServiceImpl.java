@@ -50,7 +50,7 @@ public class PayChannelServiceImpl implements PayChannelService {
      * @throws BusinessException
      */
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void bindPlatformChannelForApp(String appId, String platformChannelCodes) throws BusinessException {
         checkParam(appId,platformChannelCodes);
 
@@ -66,6 +66,23 @@ public class PayChannelServiceImpl implements PayChannelService {
 
     }
 
+    /***\
+     *
+     * 用是否已经绑定服务类型
+     * @param appId  应用ID
+     * @param platformChannel 平台服务类型Code
+     * @return 已绑定返回1，否则 返回0
+     * @throws BusinessException
+     */
+    @Override
+    public int queryAppBindPlatformChannel(String appId, String platformChannel) throws BusinessException {
+        AppPlatformChannel entity = appPlatformChannelMapper.selectOne(new LambdaQueryWrapper<AppPlatformChannel>().eq(AppPlatformChannel::getAppId, appId)
+                .eq(AppPlatformChannel::getPlatformChannel, platformChannel));
+        if (Objects.nonNull(entity)){
+            return 1;
+        }
+        return 0;
+    }
 
 
     /***
