@@ -2,4 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.shanjupay.transaction.mapper.PlatformChannelMapper">
 
+    <!---->
+    <select id="selectPayChannelByPlatformChannel"
+            resultType="com.shanjupay.transaction.api.dto.PayChannelDTO">
+        SELECT pc.*
+        FROM `platform_channel` pla, `pay_channel` pc, `platform_pay_channel` ppc
+        WHERE pla.CHANNEL_CODE = ppc.PLATFORM_CHANNEL
+            AND ppc.PAY_CHANNEL = pc.CHANNEL_CODE
+            AND pla.CHANNEL_CODE = #{platformChannelCode}
+    </select>
+
+
 </mapper>

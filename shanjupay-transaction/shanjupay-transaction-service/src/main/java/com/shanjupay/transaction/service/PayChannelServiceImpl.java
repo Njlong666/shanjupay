@@ -5,6 +5,7 @@ import com.shanjupay.common.domain.BusinessException;
 import com.shanjupay.common.domain.CommonErrorCode;
 import com.shanjupay.common.util.StringUtil;
 import com.shanjupay.transaction.api.PayChannelService;
+import com.shanjupay.transaction.api.dto.PayChannelDTO;
 import com.shanjupay.transaction.api.dto.PlatformChannelDTO;
 import com.shanjupay.transaction.convert.PlatformChannelConvert;
 import com.shanjupay.transaction.entity.AppPlatformChannel;
@@ -96,4 +97,17 @@ public class PayChannelServiceImpl implements PayChannelService {
             throw new BusinessException(CommonErrorCode.E_110006);
         }
     }
+
+
+
+    /***
+     * 根据平台服务类型获取原始支付渠道
+     * @param platformChannelCode 支付渠道编码
+     * @return 支付渠道列表
+     */
+    @Override
+    public List<PayChannelDTO> queryPayChannelByPlatformChannel(String platformChannelCode) {
+        return platformChannelMapper.selectPayChannelByPlatformChannel(platformChannelCode);
+    }
+
 }
