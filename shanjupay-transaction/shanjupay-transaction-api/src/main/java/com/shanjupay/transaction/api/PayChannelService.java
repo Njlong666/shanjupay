@@ -2,6 +2,7 @@ package com.shanjupay.transaction.api;
 
 import com.shanjupay.common.domain.BusinessException;
 import com.shanjupay.transaction.api.dto.PayChannelDTO;
+import com.shanjupay.transaction.api.dto.PayChannelParamDTO;
 import com.shanjupay.transaction.api.dto.PlatformChannelDTO;
 
 import java.util.List;
@@ -29,7 +30,7 @@ public interface PayChannelService {
     void bindPlatformChannelForApp(String appId, String platformChannelCodes) throws BusinessException;
 
 
-    /***\
+    /***
      *
      * 用是否已经绑定服务类型
      * @param appId  应用ID
@@ -45,5 +46,13 @@ public interface PayChannelService {
      * @param platformChannelCode 支付渠道编码
      * @return 支付渠道列表
      */
-    public List<PayChannelDTO> queryPayChannelByPlatformChannel(String platformChannelCode);
+    List<PayChannelDTO> queryPayChannelByPlatformChannel(String platformChannelCode);
+
+
+    /***
+     * 保存支付渠道参数
+     * @param payChannelParam 支付渠道参数
+     * @throws BusinessException
+     */
+    void savePayChannelParam(PayChannelParamDTO payChannelParam) throws BusinessException;
 }

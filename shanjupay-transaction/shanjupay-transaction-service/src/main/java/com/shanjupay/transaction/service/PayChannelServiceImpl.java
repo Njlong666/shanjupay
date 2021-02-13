@@ -6,11 +6,15 @@ import com.shanjupay.common.domain.CommonErrorCode;
 import com.shanjupay.common.util.StringUtil;
 import com.shanjupay.transaction.api.PayChannelService;
 import com.shanjupay.transaction.api.dto.PayChannelDTO;
+import com.shanjupay.transaction.api.dto.PayChannelParamDTO;
 import com.shanjupay.transaction.api.dto.PlatformChannelDTO;
+import com.shanjupay.transaction.convert.PayChannelParamConvert;
 import com.shanjupay.transaction.convert.PlatformChannelConvert;
 import com.shanjupay.transaction.entity.AppPlatformChannel;
+import com.shanjupay.transaction.entity.PayChannelParam;
 import com.shanjupay.transaction.entity.PlatformChannel;
 import com.shanjupay.transaction.mapper.AppPlatformChannelMapper;
+import com.shanjupay.transaction.mapper.PayChannelParamMapper;
 import com.shanjupay.transaction.mapper.PlatformChannelMapper;
 import org.apache.dubbo.config.annotation.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,9 @@ public class PayChannelServiceImpl implements PayChannelService {
 
     @Resource
     private AppPlatformChannelMapper appPlatformChannelMapper;
+
+    @Resource
+    private PayChannelParamMapper payChannelParamMapper;
 
     /***
      * 查询所有支付渠道
@@ -108,6 +115,61 @@ public class PayChannelServiceImpl implements PayChannelService {
     @Override
     public List<PayChannelDTO> queryPayChannelByPlatformChannel(String platformChannelCode) {
         return platformChannelMapper.selectPayChannelByPlatformChannel(platformChannelCode);
+    }
+
+
+    /***
+     * 保存支付渠道参数
+     * @param payChannelParam 支付渠道参数
+     * @throws BusinessException
+     */
+    @Override
+    public void savePayChannelParam(PayChannelParamDTO payChannelParam) throws BusinessException {
+        if (Objects.isNull(payChannelParam) || Objects.isNull(payChannelParam.getAppId())
+                                            || Objects.isNull(payChannelParam.getPlatformChannelCode())
+                                            || Objects.isNull(payChannelParam.getPayChannel())){
+            throw new BusinessException(CommonErrorCode.E_110006);
+        }
+
+        /*
+        * 该应用的服务类型已经配置某支付渠道参数则执行更新操作，
+        * 否 执行添加操作
+        * */
+        Long appPlatformChannelId = selectIdByAppPlatformChannel(payChannelParam.getAppId(),
+                payChannelParam.getPlatformChannelCode());
+        if (Objects.isNull(appPlatformChannelId)){
+            throw new BusinessException(CommonErrorCode.E_300010);
+        }
+        PayChannelParam payChannelEntity = payChannelParamMapper.selectOne(new LambdaQueryWrapper<PayChannelParam>()
+                .eq(PayChannelParam::getAppPlatformChannelId, appPlatformChannelId)
+                .eq(PayChannelParam::getPayChannel, payChannelParam.getPayChannel()));
+        if (Objects.nonNull(payChannelEntity)){
+            payChannelEntity.setChannelName(payChannelParam.getChannelName());
+            payChannelEntity.setParam(payChannelParam.getParam());
+            payChannelParamMapper.updateById(payChannelEntity);
+        }else {
+            PayChannelParam dto2entity = PayChannelParamConvert.INSTANCE.dto2entity(payChannelParam);
+            dto2entity.setAppPlatformChannelId(appPlatformChannelId);
+            payChannelParamMapper.insert(dto2entity);
+        }
+
+
+    }
+
+
+    /***
+     * 根据AppId platformChannelCode 查询
+     * @param appId 应用ID
+     * @param platformChannelCode 应用绑定的服务类型对应的code
+     * @return  应用绑定的服务类型Id
+     */
+    private Long selectIdByAppPlatformChannel(String appId,String platformChannelCode){
+        AppPlatformChannel appPlatformChannel = appPlatformChannelMapper.selectOne(new LambdaQueryWrapper<AppPlatformChannel>().eq(AppPlatformChannel::getAppId, appId)
+                .eq(AppPlatformChannel::getPlatformChannel, platformChannelCode));
+        if (Objects.nonNull(appPlatformChannel)){
+            return appPlatformChannel.getId();
+        }
+        return null;
     }
 
 }
