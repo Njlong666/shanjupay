@@ -34,7 +34,10 @@ spring:
             refresh: true
             data-id: spring-boot-mybatis-plus.yaml # spring boot mybatisplus配置
             group: COMMON_GROUP # 通用配置组
-
+          -
+            refresh: true # redis配置
+            data-id: spring-boot-redis.yaml
+            group: COMMON_GROUP
 dubbo:
   scan:
     # dubbo 服务扫描基准包

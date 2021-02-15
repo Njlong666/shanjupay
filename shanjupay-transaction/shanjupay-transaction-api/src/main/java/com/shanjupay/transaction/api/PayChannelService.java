@@ -55,4 +55,24 @@ public interface PayChannelService {
      * @throws BusinessException
      */
     void savePayChannelParam(PayChannelParamDTO payChannelParam) throws BusinessException;
+
+
+    /***
+     * 查询支付渠道参数列表
+     * @param appId appId
+     * @param platformChannelCode platformChannelCode
+     * @return 支付渠道参数列表
+     */
+    List<PayChannelParamDTO> queryPayChannelParamByAppAndPlatform(String appId , String  platformChannelCode);
+
+
+    /***
+     * 支付渠道参数详细信息
+     * @param appId appId
+     * @param platformChannelCode platformChannelCode
+     * @param payChannel payChannel
+     * @return 详细信息
+     */
+   PayChannelParamDTO queryParamByAppPlatformAndPayChannel(String appId , String  platformChannelCode,String payChannel);
+
 }

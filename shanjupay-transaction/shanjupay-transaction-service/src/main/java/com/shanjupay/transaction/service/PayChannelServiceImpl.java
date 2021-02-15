@@ -1,8 +1,11 @@
 package com.shanjupay.transaction.service;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.shanjupay.common.cache.Cache;
 import com.shanjupay.common.domain.BusinessException;
 import com.shanjupay.common.domain.CommonErrorCode;
+import com.shanjupay.common.util.RedisUtil;
 import com.shanjupay.common.util.StringUtil;
 import com.shanjupay.transaction.api.PayChannelService;
 import com.shanjupay.transaction.api.dto.PayChannelDTO;
@@ -40,6 +43,9 @@ public class PayChannelServiceImpl implements PayChannelService {
 
     @Resource
     private PayChannelParamMapper payChannelParamMapper;
+
+    @Resource
+    private Cache cache;
 
     /***
      * 查询所有支付渠道
@@ -153,7 +159,57 @@ public class PayChannelServiceImpl implements PayChannelService {
             payChannelParamMapper.insert(dto2entity);
         }
 
+        updateCache(payChannelParam.getAppId(),payChannelParam.getPlatformChannelCode());
+    }
 
+    /***
+     * 查询支付渠道参数列表
+     * @param appId appId
+     * @param platformChannelCode platformChannelCode
+     * @return 支付渠道参数列表
+     */
+    @Override
+    public List<PayChannelParamDTO> queryPayChannelParamByAppAndPlatform(String appId, String platformChannelCode) {
+        String key = RedisUtil.keyBuilder(appId, platformChannelCode);
+        boolean exists = cache.exists(key);
+        if (exists){
+            String redisCache = cache.get(key);
+            if (!StringUtil.isBlank(redisCache)){
+                List<PayChannelParam> payChannelParams = JSON.parseArray(redisCache, PayChannelParam.class);
+                return PayChannelParamConvert.INSTANCE.listentity2listdto(payChannelParams);
+            }
+        }
+
+        Long appPlatformChannelId = selectIdByAppPlatformChannel(appId, platformChannelCode);
+        if (Objects.nonNull(appPlatformChannelId)){
+            List<PayChannelParam> payChannelParamList = payChannelParamMapper.selectList(new LambdaQueryWrapper<PayChannelParam>()
+                    .eq(PayChannelParam::getAppPlatformChannelId, appPlatformChannelId));
+            if (!payChannelParamList.isEmpty()){
+                cache.set(key, JSON.toJSONString(payChannelParamList));
+            }
+            return PayChannelParamConvert.INSTANCE.listentity2listdto(payChannelParamList);
+        }
+        return null;
+    }
+
+    /***
+     * 支付渠道参数详细信息
+     * @param appId appId
+     * @param platformChannelCode platformChannelCode
+     * @param payChannel payChannel
+     * @return 详细信息comm
+     */
+    @Override
+    public PayChannelParamDTO queryParamByAppPlatformAndPayChannel(String appId, String platformChannelCode, String payChannel) {
+        List<PayChannelParamDTO> payChannelParamDtoList= queryPayChannelParamByAppAndPlatform(appId, platformChannelCode);
+        if (!payChannelParamDtoList.isEmpty()){
+            for (PayChannelParamDTO payChannelParamDTO : payChannelParamDtoList) {
+                if (payChannelParamDTO.getPayChannel().equals(payChannel)){
+                    return payChannelParamDTO;
+                }
+            }
+        }
+        return null;
     }
 
 
@@ -170,6 +226,29 @@ public class PayChannelServiceImpl implements PayChannelService {
             return appPlatformChannel.getId();
         }
         return null;
+    }
+
+
+    /***
+     * 保存缓存
+     * @param appId 应用ID
+     * @param platformChannelCode 服务类型编码
+     */
+    private void updateCache(String appId,String platformChannelCode){
+        String key = RedisUtil.keyBuilder(appId, platformChannelCode);
+        boolean exists = cache.exists(key);
+        if (exists){
+            cache.del(key);
+        }
+        Long appPlatformChannelId = selectIdByAppPlatformChannel(appId, platformChannelCode);
+        if (Objects.nonNull(appPlatformChannelId)){
+            List<PayChannelParam> payChannelParamList = payChannelParamMapper.selectList(new LambdaQueryWrapper<PayChannelParam>()
+                    .eq(PayChannelParam::getAppPlatformChannelId, appPlatformChannelId));
+           // return PayChannelParamConvert.INSTANCE.listentity2listdto(payChannelParamList);
+            if (!payChannelParamList.isEmpty()){
+                cache.set(key, JSON.toJSONString(payChannelParamList));
+            }
+        }
     }
 
 }

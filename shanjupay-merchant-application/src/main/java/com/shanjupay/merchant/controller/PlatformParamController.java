@@ -36,6 +36,7 @@ public class PlatformParamController {
 
     /**
      * 根据平台服务类型获取支付渠道列表
+     *
      * @param platformChannelCode platformChannelCode
      * @return 支付渠道列表
      */
@@ -62,4 +63,37 @@ public class PlatformParamController {
         payChannelService.savePayChannelParam(payChannelParam);
     }
 
+
+    /***
+     * 支付渠道参数列表
+     * @param appId appId
+     * @param platformChannel 支付渠道
+     * @return 支付渠道列表
+     */
+    @ApiOperation("支付渠道参数列表")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "appId", value = "应用id", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "platformChannel", value = "服务类型", required = true, dataType = "String", paramType = "path")})
+    @GetMapping(value = "/my/pay-channel-params/apps/{appId}/platform-channels/{platformChannel}")
+    public List<PayChannelParamDTO> queryPayChannelParam(@PathVariable String appId, @PathVariable String platformChannel) {
+        return payChannelService.queryPayChannelParamByAppAndPlatform(appId, platformChannel);
+    }
+
+
+    /***
+     * 支付参数详细信息
+     * @param appId appId
+     * @param platformChannel 支付类型
+     * @param payChannel 支付渠道
+     * @return
+     */
+    @ApiOperation("支付参数详细信息")
+    @ApiImplicitParams({
+            @ApiImplicitParam(name = "appId", value = "应用id", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "platformChannel", value = "平台支付渠道编码", required = true, dataType = "String", paramType = "path"),
+            @ApiImplicitParam(name = "payChannel", value = "实际支付渠道编码", required = true, dataType = "String", paramType = "path")})
+    @GetMapping(value = "/my/pay-channel-params/apps/{appId}/platform-channels/{platformChannel}/pay‐channels/{payChannel}")
+    public PayChannelParamDTO queryPayChannelParam(@PathVariable String appId, @PathVariable String platformChannel, @PathVariable String payChannel) {
+        return payChannelService.queryParamByAppPlatformAndPayChannel(appId, platformChannel, payChannel);
+    }
 }
