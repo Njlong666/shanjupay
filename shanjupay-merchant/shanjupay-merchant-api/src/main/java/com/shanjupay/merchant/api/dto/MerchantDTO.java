@@ -38,6 +38,9 @@ public class MerchantDTO implements Serializable {
     @ApiModelProperty(value = "联系人姓名")
     private String username;
 
+    @ApiModelProperty(value = "用户密码")
+    private String password;
+
     @ApiModelProperty(value = "联系人手机号(关联统一账号)")
     private String mobile;
 

@@ -7,13 +7,28 @@ import com.shanjupay.common.util.PhoneUtil;
 import com.shanjupay.common.util.StringUtil;
 import com.shanjupay.merchant.api.MerchantService;
 import com.shanjupay.merchant.api.dto.MerchantDTO;
+import com.shanjupay.merchant.api.dto.StaffDTO;
+import com.shanjupay.merchant.api.dto.StoreDTO;
 import com.shanjupay.merchant.convert.MerchantConvert;
+import com.shanjupay.merchant.convert.StaffConvert;
+import com.shanjupay.merchant.convert.StoreConvert;
 import com.shanjupay.merchant.entity.Merchant;
+import com.shanjupay.merchant.entity.Staff;
+import com.shanjupay.merchant.entity.Store;
+import com.shanjupay.merchant.entity.StoreStaff;
 import com.shanjupay.merchant.mapper.MerchantMapper;
+import com.shanjupay.merchant.mapper.StaffMapper;
+import com.shanjupay.merchant.mapper.StoreMapper;
+import com.shanjupay.merchant.mapper.StoreStaffMapper;
+import com.shanjupay.user.api.TenantService;
+import com.shanjupay.user.api.dto.tenant.CreateTenantRequestDTO;
+import com.shanjupay.user.api.dto.tenant.TenantDTO;
+import org.apache.dubbo.config.annotation.Reference;
 import org.apache.dubbo.config.annotation.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 
 /*****
@@ -23,8 +38,21 @@ import java.util.Objects;
 @Service
 public class MerchantServiceImpl implements MerchantService {
 
-    @Autowired
+    @Resource
     MerchantMapper merchantMapper;
+
+    @Resource
+    StoreMapper storeMapper;
+
+    @Resource
+    StaffMapper staffMapper;
+
+    @Resource
+    StoreStaffMapper storeStaffMapper;
+
+    @Reference
+    TenantService tenantService;
+
 
     /**
      * 根据ID查询详细信息
@@ -49,14 +77,56 @@ public class MerchantServiceImpl implements MerchantService {
      * @return 返回保存的商户信息
      */
     @Override
+    @Transactional
     public MerchantDTO saveMerchant(MerchantDTO merchantDTO) throws BusinessException {
         //参数校验
         saveMerchantCheckParam(merchantDTO);
 
+        //添加租户 和账号 并绑定关系
+        CreateTenantRequestDTO createTenantRequestDTO = new CreateTenantRequestDTO();
+        createTenantRequestDTO.setMobile(merchantDTO.getMobile());
+        createTenantRequestDTO.setUsername(merchantDTO.getUsername());
+        createTenantRequestDTO.setPassword(merchantDTO.getPassword());
+        createTenantRequestDTO.setName(merchantDTO.getUsername());
+        //表示该租户类型是商户
+        createTenantRequestDTO.setTenantTypeCode("shanju‐merchant");
+        //设置租户套餐为初始化套餐餐
+        createTenantRequestDTO.setBundleCode("shanju‐merchant");
+        TenantDTO tenantAndAccount = tenantService.createTenantAndAccount(createTenantRequestDTO);
+        if (Objects.isNull(tenantAndAccount) || Objects.isNull(tenantAndAccount.getId())){
+            throw new BusinessException(CommonErrorCode.E_200012);
+        }
+        //判断租户下是否已经注册过商户
+        Merchant merchantEntity = merchantMapper.selectOne(new LambdaQueryWrapper<Merchant>().eq(Merchant::getTenantId, tenantAndAccount.getId()));
+        if (Objects.nonNull(merchantEntity)){
+            throw new BusinessException(CommonErrorCode.E_200017);
+        }
+
         Merchant merchant = MerchantConvert.INSTANCE.dtoToEntity(merchantDTO);
         //审核状态 0-未申请,1-已申请待审核,2-审核通过,3-审核拒绝
         merchant.setAuditStatus("0");
+        merchant.setTenantId(tenantAndAccount.getId());
         merchantMapper.insert(merchant);
+
+        //新增门店
+        StoreDTO storeDTO = new StoreDTO();
+        storeDTO.setMerchantId(merchant.getId());
+        storeDTO.setStoreName("根门店");
+        storeDTO.setStoreStatus(true);
+        StoreDTO store = createStore(storeDTO);
+
+        //新增员工
+        StaffDTO staffDTO = new StaffDTO();
+        staffDTO.setMobile(merchantDTO.getMobile());
+        staffDTO.setUsername(merchantDTO.getUsername());
+        staffDTO.setStoreId(store.getId());
+        staffDTO.setMerchantId(merchant.getId());
+        staffDTO.setStaffStatus(true);
+        StaffDTO staff = createStaff(staffDTO);
+
+        //新增员工和员工关联关系
+        bindStaffToStore(store.getId(),staff.getId());
+
 
         MerchantDTO merchantDtoResp = MerchantConvert.INSTANCE.entityToDto(merchant);
         merchantDtoResp.setId(merchant.getId());
@@ -81,6 +151,10 @@ public class MerchantServiceImpl implements MerchantService {
 
         if (!PhoneUtil.isMatches(merchantDTO.getMobile())) {
             throw new BusinessException(CommonErrorCode.E_100109);
+        }
+
+        if (Objects.isNull(merchantDTO.getPassword())) {
+            throw new BusinessException(CommonErrorCode.E_100111);
         }
 
         //查询手机号是否已经存在
@@ -168,4 +242,92 @@ public class MerchantServiceImpl implements MerchantService {
         return MerchantConvert.INSTANCE.entityToDto(merchant);
     }
 
+    /***
+     * 保存门店信息
+     * @param storeDTO storeDTO
+     * @return storeDTO
+     * @throws BusinessException
+     */
+    @Override
+    public StoreDTO createStore(StoreDTO storeDTO) throws BusinessException {
+        if (Objects.isNull(storeDTO)){
+            throw new BusinessException(CommonErrorCode.E_110006);
+        }
+        Store store = StoreConvert.INSTANCE.dto2entity(storeDTO);
+        storeMapper.insert(store);
+        return StoreConvert.INSTANCE.entity2dto(store);
+    }
+
+
+    /***
+     * 保存员工信息
+     * @param staffDTO 员工信息
+     * @return StaffDTO
+     * @throws BusinessException
+     */
+    @Override
+    public StaffDTO createStaff(StaffDTO staffDTO) throws BusinessException {
+        if (Objects.isNull(staffDTO) || Objects.isNull(staffDTO.getMobile())
+                                     || Objects.isNull(staffDTO.getUsername())
+                                     || Objects.isNull(staffDTO.getMerchantId())){
+            throw new BusinessException(CommonErrorCode.E_110006);
+        }
+        Boolean existStaffByMobile = isExistStaffByMobile(staffDTO.getMobile(), staffDTO.getMerchantId());
+        if (existStaffByMobile){
+            throw new BusinessException(CommonErrorCode.E_100113);
+        }
+
+        Boolean existStaffByUserName = isExistStaffByUserName(staffDTO.getUsername(), staffDTO.getMerchantId());
+        if (existStaffByUserName){
+            throw new BusinessException(CommonErrorCode.E_100114);
+        }
+
+        Staff staff = StaffConvert.INSTANCE.dto2entity(staffDTO);
+        staffMapper.insert(staff);
+
+        return StaffConvert.INSTANCE.entity2dto(staff);
+    }
+
+    /***
+     * 保存门店与员工关联信息
+     * @param storeId
+     * @param staffId
+     * @throws BusinessException
+     */
+    @Override
+    public void bindStaffToStore(Long storeId, Long staffId) throws BusinessException {
+        if (Objects.isNull(staffId) || Objects.isNull(storeId)){
+            throw new BusinessException(CommonErrorCode.E_110006);
+        }
+        StoreStaff  storeStaff = new StoreStaff();
+        storeStaff.setStaffId(staffId);
+        storeStaff.setStoreId(storeId);
+        storeStaffMapper.insert(storeStaff);
+    }
+
+
+    /***
+     * 手机号是否唯一
+     * @param mobile 手机号
+     * @param merchantId 商户ID
+     * @return 默认true
+     */
+    private Boolean isExistStaffByMobile(String mobile, Long merchantId){
+        Integer count = staffMapper.selectCount(new LambdaQueryWrapper<Staff>().eq(Staff::getMobile, mobile)
+                .eq(Staff::getMerchantId,merchantId));
+        return count > 0;
+    }
+
+
+    /***
+     * 账户是否唯一
+     * @param userName 账户是否唯一
+     * @param merchantId 商户ID
+     * @return 默认true
+     */
+    private Boolean isExistStaffByUserName(String userName, Long merchantId){
+        Integer count = staffMapper.selectCount(new LambdaQueryWrapper<Staff>().eq(Staff::getUsername, userName)
+                .eq(Staff::getMerchantId,merchantId));
+        return count > 0;
+    }
 }
