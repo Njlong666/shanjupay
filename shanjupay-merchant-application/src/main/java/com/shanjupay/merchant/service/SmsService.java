@@ -15,7 +15,7 @@ public interface SmsService {
      * @param phone 手机号
      * @return key
      */
-    Map<String, Object> generate(String phone) throws BusinessException;
+    String generate(String phone) throws BusinessException;
 
 
     /***

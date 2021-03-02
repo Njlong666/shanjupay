@@ -13,9 +13,6 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * @author NJL
- */
 @Service
 @Slf4j
 public class OauthClientDetailsServiceImpl implements OauthClientDetailsService {

@@ -63,12 +63,12 @@ public class MerchantServiceImpl implements MerchantService {
     @Override
     public MerchantDTO queryMerchantById(Long merchantId) {
         Merchant merchant = merchantMapper.selectById(merchantId);
-        Long id = merchant.getId();
-        MerchantDTO merchantDTO = new MerchantDTO();
+//        Long id = merchant.getId();
+//        MerchantDTO merchantDTO = new MerchantDTO();
+//
+//        merchantDTO.setId(id);
 
-        merchantDTO.setId(id);
-
-        return merchantDTO;
+        return MerchantConvert.INSTANCE.entityToDto(merchant);
     }
 
     /***
@@ -158,7 +158,8 @@ public class MerchantServiceImpl implements MerchantService {
         }
 
         //查询手机号是否已经存在
-        Integer count = merchantMapper.selectCount(new LambdaQueryWrapper<Merchant>().eq(Merchant::getMobile, merchantDTO.getMobile()));
+        Integer count = merchantMapper.selectCount(new LambdaQueryWrapper<Merchant>()
+                .eq(Merchant::getMobile, merchantDTO.getMobile()));
         if (count > 0) {
             throw new BusinessException(CommonErrorCode.E_100113);
         }
@@ -305,7 +306,6 @@ public class MerchantServiceImpl implements MerchantService {
         storeStaffMapper.insert(storeStaff);
     }
 
-
     /***
      * 手机号是否唯一
      * @param mobile 手机号
@@ -330,4 +330,21 @@ public class MerchantServiceImpl implements MerchantService {
                 .eq(Staff::getMerchantId,merchantId));
         return count > 0;
     }
+
+
+
+
+
+    /***
+     * 查询租户下的商户
+     * @param tenantId 租户ID
+     * @return MerchantDTO
+     * @throws BusinessException
+     */
+    @Override
+    public MerchantDTO queryMerchantByTenantId(Long tenantId) throws BusinessException {
+        Merchant merchant = merchantMapper.selectOne(new LambdaQueryWrapper<Merchant>().eq(Merchant::getTenantId, tenantId));
+        return MerchantConvert.INSTANCE.entityToDto(merchant);
+    }
+
 }

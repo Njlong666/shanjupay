@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration monitorInterval="180" packages="">
     <properties>
-        <property name="prjname">${project.name}</property>
+        <property name="prjname">merchant-application</property>
         <property name="logdir">logs</property>
-        <property name="PATTERN">[${project.name}][${env:SERVER_PORT}] %date{YYYY-MM-dd HH:mm:ss,SSS} %highlight{%level} [%thread][%file:%line] - %msg%n%throwable</property>
+        <property name="PATTERN">[merchant-application][${env:SERVER_PORT}] %date{YYYY-MM-dd HH:mm:ss,SSS} %highlight{%level} [%thread][%file:%line] - %msg%n%throwable</property>
     </properties>
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
@@ -19,14 +19,14 @@
             </Policies>
         </RollingFile>
 
-        <RollingFile name="DebugAppender" fileName="${logdir}/${prjname}_info.log"
-                     filePattern="${logdir}/$${date:yyyy-MM-dd}/${prjname}_info.%d{yyyy-MM-dd-HH}.log" append="true">
-            <PatternLayout pattern="${PATTERN}"/>
-            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>
-            <Policies>
-                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
-            </Policies>
-        </RollingFile>
+<!--        <RollingFile name="DebugAppender" fileName="${logdir}/${prjname}_info.log"-->
+        <!--                     filePattern="${logdir}/$${date:yyyy-MM-dd}/${prjname}_info.%d{yyyy-MM-dd-HH}.log" append="true">-->
+        <!--            <PatternLayout pattern="${PATTERN}"/>-->
+        <!--            <ThresholdFilter level="DEBUG" onMatch="ACCEPT" onMismatch="DENY"/>-->
+        <!--            <Policies>-->
+        <!--                <TimeBasedTriggeringPolicy interval="1" modulate="true" />-->
+        <!--            </Policies>-->
+        <!--        </RollingFile>-->
 
         <!--异步appender-->
         <Async name="AsyncAppender" includeLocation="true">

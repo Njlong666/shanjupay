@@ -70,4 +70,13 @@ public interface MerchantService {
      */
     void bindStaffToStore(Long storeId , Long staffId) throws BusinessException;
 
+
+    /***
+     * 查询租户下的商户
+     * @param tenantId 租户ID
+     * @return MerchantDTO
+     * @throws BusinessException
+     */
+    MerchantDTO queryMerchantByTenantId(Long tenantId) throws  BusinessException;
+
 }

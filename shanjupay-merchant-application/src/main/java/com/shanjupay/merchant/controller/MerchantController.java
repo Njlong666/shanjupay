@@ -47,6 +47,21 @@ public class MerchantController {
         return merchantDTO;
     }
 
+
+    /***
+     * 查询商户信息
+     * @return 商户信息
+     */
+    @ApiOperation("获取登录用户的商户信息")
+    @GetMapping(value = "/my/merchants")
+    public MerchantDTO getMyMerchantInfo() {
+        Long merchantId = SecurityUtil.getMerchantId();
+        return merchantService.queryMerchantById(merchantId);
+    }
+
+
+
+
     @ApiOperation("测试")
     @GetMapping(path = "/hello")
     public String hello() {
@@ -68,11 +83,10 @@ public class MerchantController {
      */
     @ApiOperation("获取验证码")
     @ApiImplicitParam(name = "phone", value = "手机号", required = true, dataType = "string")
-    @PostMapping(value = "/generate")
-    public Map<String, Object> generate(@RequestParam("phone") String phone) {
+    @GetMapping(value = "/sms")
+    public String generate(@RequestParam("phone") String phone) {
         return smsService.generate(phone);
     }
-
 
 
     /***
@@ -82,11 +96,11 @@ public class MerchantController {
      */
     @ApiOperation("商户注册")
     @ApiImplicitParam(name = "merchantRegisterVO", value = "商户注册信息", required = true, dataType = "body")
-    @PostMapping(value = "/registration")
-    public MerchantRegisterVO registration(@RequestBody  MerchantRegisterVO  merchantRegisterVO) {
+    @PostMapping(value = "/merchants/register")
+    public MerchantRegisterVO registration(@RequestBody MerchantRegisterVO merchantRegisterVO) {
 
 
-        smsService.verify(merchantRegisterVO.getVerifiyCode(),merchantRegisterVO.getVerifiykey());
+        smsService.verify(merchantRegisterVO.getVerifiyCode(), merchantRegisterVO.getVerifiykey());
 
 
         MerchantDTO merchantDTO = MerchantConvertController.INSTANCE.voToDto(merchantRegisterVO);
@@ -103,7 +117,7 @@ public class MerchantController {
      */
     @ApiOperation("证件照上传")
     @PostMapping(value = "/upload")
-    public String upload( @ApiParam(value = "证件照",required = true) @RequestParam("file") MultipartFile file){
+    public String upload(@ApiParam(value = "证件照", required = true) @RequestParam("file") MultipartFile file) {
         return fileService.upload(file);
     }
 
@@ -113,18 +127,17 @@ public class MerchantController {
      * @param merchantInfo  merchantInfo
      */
     @ApiOperation("商户资质申请")
-    @ApiImplicitParams({ @ApiImplicitParam(name = "merchantInfo", value = "商户认证资料", required = true, dataType = "MerchantDetailVO", paramType = "body") })
+    @ApiImplicitParams({@ApiImplicitParam(name = "merchantInfo", value = "商户认证资料", required = true, dataType = "MerchantDetailVO", paramType = "body")})
     @PostMapping("/my/merchants/save")
     public void saveMerchant(@RequestBody MerchantDetailVO merchantInfo) {
         //token中获取用户信息
         Long merchantId = SecurityUtil.getMerchantId();
-        if (Objects.isNull(merchantId)){
+        if (Objects.isNull(merchantId)) {
             throw new BusinessException(CommonErrorCode.E_200018);
         }
         MerchantDTO merchantDTO = MerchantConvert.INSTANCE.voToDto(merchantInfo);
-        merchantService.qualificationApplyFor(merchantId,merchantDTO);
+        merchantService.qualificationApplyFor(merchantId, merchantDTO);
     }
-
 
 
     /***
@@ -132,13 +145,13 @@ public class MerchantController {
      * @param auditStatus  审核状态 2-审核通过,3-审核拒绝
      */
     @ApiOperation("商户资质审核")
-    @ApiImplicitParams({ @ApiImplicitParam(name = "auditStatus", value = "商户资质审核", required = true, dataType = "String") })
+    @ApiImplicitParams({@ApiImplicitParam(name = "auditStatus", value = "商户资质审核", required = true, dataType = "String")})
     @PostMapping("/my/merchants/updateMerchantAuditStatus")
-    public MerchantDTO updateMerchantAuditStatus( @ApiParam(name = "auditStatus",value = "审核状态 2-审核通过,3-审核拒绝",required = true)
-                                                      @RequestParam("auditStatus") String auditStatus){
+    public MerchantDTO updateMerchantAuditStatus(@ApiParam(name = "auditStatus", value = "审核状态 2-审核通过,3-审核拒绝", required = true)
+                                                 @RequestParam("auditStatus") String auditStatus) {
         //token中获取用户信息
         Long merchantId = SecurityUtil.getMerchantId();
-        if (Objects.isNull(merchantId)){
+        if (Objects.isNull(merchantId)) {
             throw new BusinessException(CommonErrorCode.E_200018);
         }
         return merchantService.updateMerchantAuditStatus(merchantId, auditStatus);

@@ -69,7 +69,7 @@ public class AppController {
      * @param platformChannelCodes 服务类型code
      */
     @ApiOperation("绑定服务类型")
-    @PostMapping(value = "/my/apps/{appId}/platform‐channels")
+    @PostMapping(value = "/my/apps/{appId}/platform-channels")
     @ApiImplicitParams({
             @ApiImplicitParam(value = "应用id", name = "appId", dataType = "string", paramType = "path"),
             @ApiImplicitParam(value = "服务类型code", name = "platformChannelCodes", dataType = "string", paramType = "query")})

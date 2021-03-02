@@ -12,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /*****
  *@Author NJL
@@ -37,7 +38,7 @@ public class SmsServiceImpl implements SmsService {
      * @return key
      */
     @Override
-    public Map<String,Object> generate(String phone) throws BusinessException {
+    public String generate(String phone) throws BusinessException {
         String url =  captchaServiceUrl + "generate?effectiveTime=600&name=sms";
         HttpHeaders tempHeaders = new HttpHeaders();
         tempHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -55,8 +56,9 @@ public class SmsServiceImpl implements SmsService {
             throw new RuntimeException("调用验证码服务错误");
         }
         log.info("掉用验证码接口返回参数：{}",responseMap);
+        Map resultMap = (Map) responseMap.get("result");
 
-        return responseMap;
+        return resultMap.get("key").toString();
     }
 
     /***

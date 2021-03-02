@@ -15,6 +15,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 /**
  * Spring Security配置
+ * @author NJL
  */
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -45,7 +46,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.authenticationProvider(integrationUserDetailsAuthenticationProvider());
     }
-    
+
 
     //不定义没有password grant_type
     @Override
@@ -53,13 +54,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
     }
-    
+
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers("/public/**", "/webjars/**", "/v2/**", "/swagger**", "/static/**", "/resources/**");
 		//web.httpFirewall(new DefaultHttpFirewall());//StrictHttpFirewall 去除验url非法验证防火墙
     }
-    
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 		http.authorizeRequests()
@@ -83,8 +84,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.accessDeniedPage("/login?authorization_error=2");
 
     }
-    
-    
+
+
 
 
 }
